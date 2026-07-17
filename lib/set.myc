@@ -1,0 +1,39 @@
+// nodule: std.collections.set
+// `Set<E>` — immutable persistent membership set (spec §3, RFC-0016 §4.4).
+//
+// # Guarantee tag: `Exact` throughout (spec §4 / RFC-0016 C2)
+// No `Set` op carries accuracy, precision, or probability semantics. Every operation is
+// a deterministic structural fact — `Exact` is the honest floor.
+//
+// # Value semantics (C4 / ADR-003)
+// `Set<E>` is an **immutable value**. Every "mutating" op (`insert`, `remove`,
+// `union`, `intersection`, `difference`) returns a *new* `Set<E>`; the receiver is
+// never modified. Structural sharing is an implementation detail invisible to identity.
+//
+// # Never-silent (C1 / G2)
+// - `contains` is total and returns `bool`.
+// - `insert` is *idempotent*: inserting an already-present element returns a new set
+//   with the same contents (no error; the op is total).
+// - `remove` is *idempotent on absent elements*: removing an absent element returns a
+//   new set with the same contents — **never** an error or a silent no-op on the
+//   original (the "no-op-returning-new" guarantee from spec §3).
+//
+// # Iteration order (documented — the honesty crux; RFC-0016 §4.4)
+// `Set` uses **insertion order**: `foldable()` yields elements in the order they were
+// first inserted. `union`, `intersection`, and `difference` each document their output
+// order (see per-op docs). The order is a property of the type, never an exposed
+// hash-bucket order (the no-silent-reorder crux).
+//
+// Note on the §7-Q1 open question: spec §7-Q1 leaves the ordered-vs-bucketed default
+// to M-501. This implementation fixes insertion order (the simplest deterministic
+// choice that satisfies no-silent-reorder). FLAGGED below.
+//
+// # EXPLAIN (C3)
+// `union` / `intersection` / `difference` each declare their result order in their
+// docs — the documented order is the inspectable artifact (spec §4).
+// @summary: best-effort transpilation via mycelium-transpile (M-873). Declared,
+// unvalidated — no Mycelium parser/typechecker confirms this output; see the
+// accompanying .gap.json for every construct this pass could not express.
+nodule std.collections.set;
+
+

@@ -1,0 +1,64 @@
+// nodule: std.collections.guarantee_matrix
+// The `std.collections` guarantee matrix encoded as **data** (RFC-0016 §4.5; spec §4).
+//
+// Every exported operation has one row in [`MATRIX`]. The matrix is the load-bearing C2
+// deliverable (RFC-0016 §4.1 C2 / VR-5): guarantee tags are asserted in tests, not prose-only.
+//
+// # Guarantee tag justification (all `Exact`)
+// No collection op carries accuracy, precision, or probability semantics: `len` counts,
+// `get` retrieves, `insert` builds a new value — each is a deterministic structural fact.
+// RFC-0016 C2 makes `Exact` the floor explicitly ("an op with no accuracy semantics … is
+// simply `Exact`"). There is nothing to upgrade and nothing to overclaim (VR-5). The
+// substantive honesty claims live in the **fallibility** and **order** columns, not the
+// tag column (spec §4 tag justification).
+//
+// # Fallibility column
+// - `Total` — the op cannot fail for any well-formed input.
+// - `Fallible` — the op returns an explicit `Option` / `Result`; the error set is named (C1).
+//
+// # Effects column
+// Every op is effect-free (C6). Allocation for a new persistent node is intrinsic/bounded
+// and budget-free at this layer (`none*` in the spec table; recorded as `"none*"` here).
+//
+// # EXPLAIN column
+// Most ops select/convert/approximate nothing — `NotApplicable`. The ops that make a
+// visible decision expose it: `update`/`slice` refusals carry a diagnostic record;
+// `get_or`'s default is reified; and the iteration-order contract is itself the
+// inspectable artifact for `keys`/`values`/`entries`/`union`/…
+// @summary: best-effort transpilation via mycelium-transpile (M-873). Declared,
+// unvalidated — no Mycelium parser/typechecker confirms this output; see the
+// accompanying .gap.json for every construct this pass could not express.
+nodule std.collections.guarantee_matrix;
+
+// Fallibility classification for an exported op.
+type Fallibility = Total | Fallible;
+
+impl Show[Fallibility] for Fallibility {
+  fn render(x: Fallibility) => Bytes =
+    match x { Total => "Total", Fallible => "Fallible" };
+};
+
+fn eq_Fallibility(a: Fallibility, b: Fallibility) => Binary{1} =
+  match a { Total => match b { Total => 0b1, _ => 0b0 }, Fallible => match b { Fallible => 0b1, _ => 0b0 } };
+
+// Whether an op has an EXPLAIN obligation (C3).
+type Explainable = Yes | NotApplicable;
+
+impl Show[Explainable] for Explainable {
+  fn render(x: Explainable) => Bytes =
+    match x { Yes => "Yes", NotApplicable => "NotApplicable" };
+};
+
+fn eq_Explainable(a: Explainable, b: Explainable) => Binary{1} =
+  match a { Yes => match b { Yes => 0b1, _ => 0b0 }, NotApplicable => match b { NotApplicable => 0b1, _ => 0b0 } };
+
+// One row in the guarantee matrix (RFC-0016 §4.5).
+type MatrixRow = MatrixRow(Bytes, Bytes, Fallibility, Bytes, Bytes, Explainable);
+
+impl Show[MatrixRow] for MatrixRow {
+  fn render(x: MatrixRow) => Bytes =
+    match x { MatrixRow(p0, p1, p2, p3, p4, p5) => bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat("MatrixRow(", render(p0)), ", "), render(p1)), ", "), render(p2)), ", "), render(p3)), ", "), render(p4)), ", "), render(p5)), ")") };
+};
+
+fn eq_MatrixRow(a: MatrixRow, b: MatrixRow) => Binary{1} =
+    match a { MatrixRow(p0, p1, p2, p3, p4, p5) => match b { MatrixRow(q0, q1, q2, q3, q4, q5) => and(and(and(and(and(bytes_eq(p0, q0), bytes_eq(p1, q1)), eq_Fallibility(p2, q2)), bytes_eq(p3, q3)), bytes_eq(p4, q4)), eq_Explainable(p5, q5)) } };

@@ -1,0 +1,127 @@
+// nodule: std.collections
+// `std.collections` — Ring 2 / Tier B value-semantic persistent collections (M-511).
+//
+// The ordinary collection surface: an immutable persistent **`Seq`** (indexed sequence),
+// an immutable persistent **`Map`** (key→value), and an immutable persistent **`Set`**
+// (membership), each made value-semantic, held to the §4.1 contract (C1–C6), and shipped
+// with a per-op guarantee matrix (RFC-0016 §4.5; [`guarantee_matrix::MATRIX`]).
+//
+// # Honesty crux (two structural halves, spec §1)
+//
+// 1. **No silent reorder.** Each structure iterates in a *documented, stable order* that
+//    is a property of the type, never an exposed hash-bucket order. A rehash/rebalance is
+//    an internal operation with **no** observable reorder (RFC-0016 §4.4). Iteration order
+//    is:
+//    - `Seq` — **index order** (0, 1, …, len-1).
+//    - `Map` / `Set` — **insertion order** (first insertion of each key/element).
+//
+// 2. **Out-of-bounds / missing-key is explicit.** `Seq::get`/`first`, `Map::get` → `None`;
+//    `Seq::pop` → `None` on empty; `Seq::update`/`slice` → `Err(IndexOOB)`. Never a
+//    silent default, a clamp, or a sentinel (C1 / G2).
+//
+// # Module boundary (spec §2)
+//
+// - **In scope:** `Seq<E>`, `Map<K,V>`, `Set<E>`, their value-semantic op surfaces, and
+//   the *non-identity* hashing-for-buckets used internally by `Map`/`Set`. The order
+//   contract is a first-class promise.
+//
+// - **Out of scope (and who owns it):**
+//   - *Identity / content-addressing hashing* — `std.content` (M-523). The bucketing hash
+//     used internally is **not** `std.content`'s canonical `ContentHash` (ADR-003; README §5
+//     seam). The two are kept strictly distinct.
+//   - *Iteration / fold combinators* (`map`/`filter`/`fold`/…) — `std.iter` (M-526). This
+//     crate exposes each structure as a `foldable()` slice/sequence in documented order;
+//     `iter` owns the traversal vocabulary.
+//   - *Ordering / equality semantics* — `std.cmp` (M-532). `collections` parameterises over
+//     `Hash`/`Eq` for its bucket-based structures but does not define comparison.
+//   - *Representation change* — `std.swap` (M-516). No op silently changes a `Repr`.
+//
+// # Guarantee matrix
+// Every exported op has a row in [`guarantee_matrix::MATRIX`] (RFC-0016 §4.5 / spec §4).
+// All ops are `Exact` (no accuracy semantics — RFC-0016 C2), pure (`effects: none[*]`),
+// and either total or honestly fallible. The matrix is asserted in tests, not prose-only
+// (C2 / VR-5).
+//
+// # C1 — never-silent
+// - `Seq::get` / `first` / `pop` / `Map::get` → `None` for absence.
+// - `Seq::update` / `slice` → `Err(`[`CollErr::IndexOOB`]`)` for bad bounds.
+// - `Map::remove` → `(new_map, None)` when key absent — explicit, never a silent no-op.
+// - No op silently reorders elements (C1 on order — spec §5 C1).
+//
+// # C4 — content-addressed, value-semantic
+// Every structure is an immutable value; every "update" returns a new value. Structural
+// sharing (when present) is an implementation detail invisible to identity. The
+// *bucketing* hash used by `Map`/`Set` internally is **not** content identity (ADR-003).
+//
+// # C6 — pure
+// Every op declares `effects: none` or `none*` (bounded allocation for a new persistent
+// node — intrinsic, budget-free at this layer). No IO, no clock, no randomness.
+//
+// # Open questions (FLAGs carried from spec §7)
+//
+// - **(Q1) The ordered-vs-bucketed default for `Map`/`Set` — M-501's to ratify.**
+//   This implementation uses **insertion order**, which satisfies the no-silent-reorder
+//   crux. If M-501 ratifies a different order (e.g. `cmp`-sorted), this impl changes;
+//   the property tests check order stability and will catch any regression.
+//
+// - **(Q2) The no-silent-reorder invariant's tag.**
+//   The matrix records the documented-order property as a spec-`Declared` invariant
+//   that is promoted to `Empirical` by the property tests in each module. It is **not**
+//   claimed `Proven` (no checked theorem — VR-5).
+//
+// - **(Q3) Whole-collection identity via `std.content`.**
+//   C4 relies on a collection's identity being the content-addressed digest of its
+//   normalized structure (`std.content`, M-523). That integration is deferred until
+//   `std.content`'s `hash_of_value` entry point for composite values is ratified
+//   (content §7-Q2). Collections currently satisfy C4 via structural equality (`PartialEq`);
+//   the content-hash integration is a follow-on.
+//
+// - **(Q4) Bucketing-hash seed.**
+//   The `HashMap` / `HashSet` internals use Rust's default hasher (deterministic in a
+//   single process). For cross-process determinism or HashDoS mitigation, a declared-seed
+//   (RT3 / RFC-0014) bucketer would replace the default. FLAGGED: any seeded hash must
+//   declare its seed acquisition as an explicit effect (C6) — never ambient entropy.
+//
+// - **(FLAG: iter dependency)**
+//   `std.iter` (M-526) is a sibling P5-B crate that is not yet implemented. `collections`
+//   exposes `foldable()` as a slice/vector (the simplest inspectable sequence source) so
+//   `iter` can consume it once it lands. No `mycelium-std-iter` dep is added here; the
+//   integration is a follow-on.
+//
+// - **(FLAG: workspace Cargo.toml)**
+//   The orchestrator scaffold did not include `mycelium-std-collections` in the workspace
+//   `Cargo.toml`; this leaf added it. FLAG for the orchestrator to reconcile.
+//
+// ## Ambient Representation (RFC-0012 §8-Q3)
+//
+// This crate's public API participates in the RFC-0012 ambient-representation contract:
+// the representation choice (binary/ternary/dense/VSA) is implicit at the call site but
+// always reified, queryable, and EXPLAIN-able — never a black box (C3/SC-3).
+// [Declared per RFC-0012; direction accepted in DN-07 §8-Q3; per-ring pass scheduled as M-540.]
+//
+// **For this crate (Ring 2, Tier B):** Collections are representation-agnostic containers —
+// a `Seq<E>` stores elements of whatever `Repr` the caller provides; no element representation
+// is coerced by the container. The bucketing hash used by `Map`/`Set` internally is not a
+// representation operation (ADR-003 — it is not `ContentHash`); no `Repr` is changed or inferred
+// by collection operations. Representation change of elements requires an explicit `std.swap`.
+//
+// # Stability (DN-66 freeze, 2026-07-01)
+//
+// This crate's public API, as documented in `docs/spec/stdlib/collections.md` (spec status:
+// Accepted (2026-06-20)) and asserted by its guarantee-matrix table, is the **frozen baseline** per
+// [DN-66](../../../docs/notes/DN-66-Stdlib-Stable-API-Freeze-And-Rust-Crate-Retirement-Status.md).
+// A future breaking change here needs a spec amendment + changelog entry, not a silent edit (G2).
+//
+// **Unfrozen for the gap-closure window (ADR-045, Accepted 2026-07-10):** this DN-66 freeze is
+// lifted per [ADR-045](../../../docs/adr/ADR-045-Kernel-And-Lexicon-Unfreeze-For-Early-Gap-Closure.md)
+// for a bounded window; a breaking change here still needs a spec amendment + changelog entry
+// (G2), not a silent edit — the window closes per the ADR-045 §2.4 re-freeze conditions, bound by
+// the DN-99 residual worklist.
+// It remains the RFC-0031 D6 differential-oracle reference; the same-named `lib/std/collections.myc` prototype is a narrower, structurally distinct surface (DN-66 S3.1) — the D6 retirement trigger has not fired, so no item here is `#[deprecated]`.
+// @summary: best-effort transpilation via mycelium-transpile (M-873). Declared,
+// unvalidated — no Mycelium parser/typechecker confirms this output; see the
+// accompanying .gap.json for every construct this pass could not express.
+nodule std.collections;
+
+// EXPLAIN (L2-B/DN-124): Declared co-include of batch-sibling type surface (homes: std.collections.error) so single-file oracle is self-contained — not a language `use` identity, not a short-form path collapse (M-1084 full path retained as provenance). Transitive type deps in the same batch are co-included. G2/VR-5.
+type CollErr = IndexOOB(Binary{64}, Binary{64}, Bytes);

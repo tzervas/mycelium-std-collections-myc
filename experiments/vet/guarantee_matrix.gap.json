@@ -1,0 +1,121 @@
+{
+  "source": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+  "emitted_items": [
+    "Fallibility",
+    "Explainable",
+    "MatrixRow"
+  ],
+  "gaps": [
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 28,
+      "col": 1,
+      "category": "DeriveSatisfied",
+      "rust_construct": "DeriveSatisfied",
+      "snippet": "# [doc = \" Fallibility classification for an exported op.\"] # [derive (Debug , Clone , Copy , PartialEq , Eq)] pub enum Fallibility { # [doc = \" The op is total: it cannot fail for any well-formed input.\"] Total , # [doc = \" The op can fail; the error set is described in `error_set`.\"] Fallible , }",
+      "reason": "enum `Fallibility` derive(Clone) is a satisfied no-op under Mycelium's value semantics (ADR-003 — every value already copies structurally; DN-128 §6.1) — not emitted as an impl, not a gap",
+      "item_name": "Fallibility"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 28,
+      "col": 1,
+      "category": "DeriveSatisfied",
+      "rust_construct": "DeriveSatisfied",
+      "snippet": "# [doc = \" Fallibility classification for an exported op.\"] # [derive (Debug , Clone , Copy , PartialEq , Eq)] pub enum Fallibility { # [doc = \" The op is total: it cannot fail for any well-formed input.\"] Total , # [doc = \" The op can fail; the error set is described in `error_set`.\"] Fallible , }",
+      "reason": "enum `Fallibility` derive(Copy) is a satisfied no-op under Mycelium's value semantics (ADR-003 — every value already copies structurally; DN-128 §6.1) — not emitted as an impl, not a gap",
+      "item_name": "Fallibility"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 28,
+      "col": 1,
+      "category": "DeriveSatisfied",
+      "rust_construct": "DeriveSatisfied",
+      "snippet": "# [doc = \" Fallibility classification for an exported op.\"] # [derive (Debug , Clone , Copy , PartialEq , Eq)] pub enum Fallibility { # [doc = \" The op is total: it cannot fail for any well-formed input.\"] Total , # [doc = \" The op can fail; the error set is described in `error_set`.\"] Fallible , }",
+      "reason": "enum `Fallibility` derive(Eq): covered by co-occurring PartialEq → `fn eq_Fallibility` (product-row collision policy; DN-128 / ONESHOT C2) — not a second emission",
+      "item_name": "Fallibility"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 37,
+      "col": 1,
+      "category": "DeriveSatisfied",
+      "rust_construct": "DeriveSatisfied",
+      "snippet": "# [doc = \" Whether an op has an EXPLAIN obligation (C3).\"] # [derive (Debug , Clone , Copy , PartialEq , Eq)] pub enum Explainable { # [doc = \" The op selects / converts / approximates and must expose a reified artifact.\"] Yes , # [doc = \" The op reports a deterministic fact; there is no hidden decision to explain.\"] NotApplicable , }",
+      "reason": "enum `Explainable` derive(Clone) is a satisfied no-op under Mycelium's value semantics (ADR-003 — every value already copies structurally; DN-128 §6.1) — not emitted as an impl, not a gap",
+      "item_name": "Explainable"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 37,
+      "col": 1,
+      "category": "DeriveSatisfied",
+      "rust_construct": "DeriveSatisfied",
+      "snippet": "# [doc = \" Whether an op has an EXPLAIN obligation (C3).\"] # [derive (Debug , Clone , Copy , PartialEq , Eq)] pub enum Explainable { # [doc = \" The op selects / converts / approximates and must expose a reified artifact.\"] Yes , # [doc = \" The op reports a deterministic fact; there is no hidden decision to explain.\"] NotApplicable , }",
+      "reason": "enum `Explainable` derive(Copy) is a satisfied no-op under Mycelium's value semantics (ADR-003 — every value already copies structurally; DN-128 §6.1) — not emitted as an impl, not a gap",
+      "item_name": "Explainable"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 37,
+      "col": 1,
+      "category": "DeriveSatisfied",
+      "rust_construct": "DeriveSatisfied",
+      "snippet": "# [doc = \" Whether an op has an EXPLAIN obligation (C3).\"] # [derive (Debug , Clone , Copy , PartialEq , Eq)] pub enum Explainable { # [doc = \" The op selects / converts / approximates and must expose a reified artifact.\"] Yes , # [doc = \" The op reports a deterministic fact; there is no hidden decision to explain.\"] NotApplicable , }",
+      "reason": "enum `Explainable` derive(Eq): covered by co-occurring PartialEq → `fn eq_Explainable` (product-row collision policy; DN-128 / ONESHOT C2) — not a second emission",
+      "item_name": "Explainable"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 46,
+      "col": 1,
+      "category": "NamedFieldDrop",
+      "rust_construct": "NamedFieldDrop",
+      "snippet": "# [doc = \" One row in the guarantee matrix (RFC-0016 §4.5).\"] # [derive (Debug , Clone , PartialEq , Eq)] pub struct MatrixRow { # [doc = \" The exported operation name.\"] pub op : & 'static str , # [doc = \" Guarantee tag on `Exact ⊐ Proven ⊐ Empirical ⊐ Declared` (VR-5).\"] # [doc = \" All rows are `\\\"Exact\\\"` — no collection op has accuracy semantics (spec §4).\"] pub guarantee : & 'static str , # [doc = \" Whether the op can fail and what the explicit error set is.\"] pub fallibility : Fallibility , # [doc = \" The explicit error / none-case description (empty string for total ops).\"] pub error_set : & 'static str , # [doc = \" Declared effects (C6). `\\\"none\\\"` = no effects; `\\\"none*\\\"` = bounded allocation only.\"] pub effects : & 'static str , # [doc = \" Whether the op has a C3 EXPLAIN obligation.\"] pub explainable : Explainable , }",
+      "reason": "struct `MatrixRow` named field(s) `op, guarantee, fallibility, error_set, effects, explainable` emitted positionally as `MatrixRow(Bytes, Bytes, Fallibility, Bytes, Bytes, Explainable)` — Mycelium's `constructor` is positional-only (no record surface); product structure preserved, field names dropped (matches `lib/std/*.myc` hand-ports)",
+      "item_name": "MatrixRow"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 46,
+      "col": 1,
+      "category": "DeriveSatisfied",
+      "rust_construct": "DeriveSatisfied",
+      "snippet": "# [doc = \" One row in the guarantee matrix (RFC-0016 §4.5).\"] # [derive (Debug , Clone , PartialEq , Eq)] pub struct MatrixRow { # [doc = \" The exported operation name.\"] pub op : & 'static str , # [doc = \" Guarantee tag on `Exact ⊐ Proven ⊐ Empirical ⊐ Declared` (VR-5).\"] # [doc = \" All rows are `\\\"Exact\\\"` — no collection op has accuracy semantics (spec §4).\"] pub guarantee : & 'static str , # [doc = \" Whether the op can fail and what the explicit error set is.\"] pub fallibility : Fallibility , # [doc = \" The explicit error / none-case description (empty string for total ops).\"] pub error_set : & 'static str , # [doc = \" Declared effects (C6). `\\\"none\\\"` = no effects; `\\\"none*\\\"` = bounded allocation only.\"] pub effects : & 'static str , # [doc = \" Whether the op has a C3 EXPLAIN obligation.\"] pub explainable : Explainable , }",
+      "reason": "struct `MatrixRow` derive(Clone) is a satisfied no-op under Mycelium's value semantics (ADR-003 — every value already copies structurally; DN-128 §6.1) — not emitted as an impl, not a gap",
+      "item_name": "MatrixRow"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 46,
+      "col": 1,
+      "category": "DeriveAttr",
+      "rust_construct": "DeriveAttr",
+      "snippet": "# [doc = \" One row in the guarantee matrix (RFC-0016 §4.5).\"] # [derive (Debug , Clone , PartialEq , Eq)] pub struct MatrixRow { # [doc = \" The exported operation name.\"] pub op : & 'static str , # [doc = \" Guarantee tag on `Exact ⊐ Proven ⊐ Empirical ⊐ Declared` (VR-5).\"] # [doc = \" All rows are `\\\"Exact\\\"` — no collection op has accuracy semantics (spec §4).\"] pub guarantee : & 'static str , # [doc = \" Whether the op can fail and what the explicit error set is.\"] pub fallibility : Fallibility , # [doc = \" The explicit error / none-case description (empty string for total ops).\"] pub error_set : & 'static str , # [doc = \" Declared effects (C6). `\\\"none\\\"` = no effects; `\\\"none*\\\"` = bounded allocation only.\"] pub effects : & 'static str , # [doc = \" Whether the op has a C3 EXPLAIN obligation.\"] pub explainable : Explainable , }",
+      "reason": "struct `MatrixRow` derive(...) names Eq not in the DN-128 standard-derive set this leaf builds (Debug/Default/Clone/Copy/PartialEq/PartialOrd/Hash all recognized; bare Eq/Ord are deliberately NOT recognized — see emit/derives/mod.rs::TABLE's doc for why) — dropped, no confirmed Mycelium surface",
+      "item_name": "MatrixRow"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 64,
+      "col": 1,
+      "category": "Other",
+      "rust_construct": "Other",
+      "snippet": "# [doc = \" The `std.collections` guarantee matrix. One row per exported op, encoded as data and\"] # [doc = \" asserted in `tests` — never prose-only (RFC-0016 §4.5; spec §4).\"] # [doc = \"\"] # [doc = \" **All rows are `Exact`** — no accuracy semantics anywhere in `std.collections`.\"] # [doc = \" The load-bearing honesty is in the **fallibility** column (C1: explicit `Option`/`Result`)\"] # [doc = \" and the **documented-order invariant** (the no-silent-reorder crux from RFC-0016 §4.4),\"] # [doc = \" captured in the `explainable` field for the order-surfacing ops.\"] pub const MATRIX : & [MatrixRow] = & [MatrixRow { op : \"Seq::len\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::is_empty\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::get\" , guarantee : \"Exact\" , fallibility : Fallibility :: Fallible , error_set : \"None when index out of range (C1)\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::first\" , guarantee : \"Exact\" , fallibility : Fallibility :: Fallible , error_set : \"None on empty (C1)\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::push\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::pop\" , guarantee : \"Exact\" , fallibility : Fallibility :: Fallible , error_set : \"None on empty (C1, never a silent no-op)\" , effects : \"none*\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::update\" , guarantee : \"Exact\" , fallibility : Fallibility :: Fallible , error_set : \"Err(IndexOOB) when i >= len (C1)\" , effects : \"none*\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Seq::concat\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::slice\" , guarantee : \"Exact\" , fallibility : Fallibility :: Fallible , error_set : \"Err(IndexOOB) on lo > hi or hi > len (no silent clamp, C1)\" , effects : \"none*\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Seq::foldable\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Map::get\" , guarantee : \"Exact\" , fallibility : Fallibility :: Fallible , error_set : \"None on missing key (C1, never a default)\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Map::contains_key\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Map::insert\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Map::remove\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Map::get_or\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Map::keys\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Map::values\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Map::entries\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Set::contains\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Set::insert\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Set::remove\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Set::union\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Set::intersection\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Set::difference\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none*\" , explainable : Explainable :: Yes , } , MatrixRow { op : \"Set::foldable\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::empty\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Seq::from_slice\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Map::empty\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Map::len\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Map::is_empty\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Set::empty\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Set::len\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } , MatrixRow { op : \"Set::is_empty\" , guarantee : \"Exact\" , fallibility : Fallibility :: Total , error_set : \"\" , effects : \"none\" , explainable : Explainable :: NotApplicable , } ,] ;",
+      "reason": "top-level `const MATRIX` — co-emit (ORACLE-R1 A4) only covers plain unsigned integer types (`u8`/`u16`/`u32`/`u64`/`u128`/`usize`); other types have no const item production and no faithful zero-arg-fn encoding (gap, never fabricate)",
+      "item_name": "MATRIX"
+    },
+    {
+      "file": "/root/git/isolated/mycelium/crates/mycelium-std-collections/src/guarantee_matrix.rs",
+      "line": 342,
+      "col": 1,
+      "category": "TestItem",
+      "rust_construct": "TestItem",
+      "snippet": "# [cfg (test)] mod tests { use super :: { Explainable , Fallibility , MATRIX } ; # [doc = \" Every exported op named in the spec §3 surface appears in the matrix.\"] # [doc = \" Guard: removing any op from MATRIX makes this fail.\"] # [test] fn matrix_contains_all_expected_ops () { let expected = [\"Seq::len\" , \"Seq::is_empty\" , \"Seq::get\" , \"Seq::first\" , \"Seq::push\" , \"Seq::pop\" , \"Seq::update\" , \"Seq::concat\" , \"Seq::slice\" , \"Seq::foldable\" , \"Map::get\" , \"Map::contains_key\" , \"Map::insert\" , \"Map::remove\" , \"Map::get_or\" , \"Map::keys\" , \"Map::values\" , \"Map::entries\" , \"Set::contains\" , \"Set::insert\" , \"Set::remove\" , \"Set::union\" , \"Set::intersection\" , \"Set::difference\" , \"Set::foldable\" , \"Seq::empty\" , \"Seq::from_slice\" , \"Map::empty\" , \"Map::len\" , \"Map::is_empty\" , \"Set::empty\" , \"Set::len\" , \"Set::is_empty\" ,] ; for name in & expected { assert ! (MATRIX . iter () . any (| r | r . op == * name) , \"matrix is missing op {:?} (spec §3)\" , name) ; } assert_eq ! (MATRIX . len () , expected . len () , \"matrix has unexpected extra rows\") ; } # [doc = \" Every row carries the `Exact` guarantee tag (spec §4 / VR-5).\"] # [doc = \" Guard: changing any tag to a weaker label makes this fail.\"] # [test] fn every_row_is_exact () { for row in MATRIX { assert_eq ! (row . guarantee , \"Exact\" , \"op {:?} must be Exact — no collection op has accuracy semantics (RFC-0016 C2)\" , row . op) ; } } # [doc = \" Total ops have an empty error set; fallible ops have a non-empty one (C1).\"] # [doc = \" Guard: setting a fallible op's error_set to \\\"\\\" makes this fail.\"] # [test] fn fallibility_and_error_set_are_consistent () { for row in MATRIX { match row . fallibility { Fallibility :: Total => assert ! (row . error_set . is_empty () , \"total op {:?} must have an empty error_set\" , row . op) , Fallibility :: Fallible => assert ! (! row . error_set . is_empty () , \"fallible op {:?} must name its error set (C1)\" , row . op) , } } } # [doc = \" The fallible ops are exactly those that can return `None` or `Err(IndexOOB)`.\"] # [doc = \" Guard: marking a total op as fallible (or vice versa) makes this fail.\"] # [test] fn exactly_the_right_fallible_ops () { let fallible : Vec < & str > = MATRIX . iter () . filter (| r | r . fallibility == Fallibility :: Fallible) . map (| r | r . op) . collect () ; let expected_fallible = [\"Seq::get\" , \"Seq::first\" , \"Seq::pop\" , \"Seq::update\" , \"Seq::slice\" , \"Map::get\" ,] ; for op in & expected_fallible { assert ! (fallible . contains (op) , \"op {op:?} must be Fallible in the matrix\") ; } assert_eq ! (fallible . len () , expected_fallible . len () , \"unexpected extra/missing fallible ops: got {fallible:?}\") ; } # [doc = \" The EXPLAIN-able ops are those that make a visible decision (C3).\"] # [doc = \" Guard: removing EXPLAIN from a decision-bearing op makes this fail.\"] # [test] fn explainable_ops_are_decision_bearing () { let explainable : Vec < & str > = MATRIX . iter () . filter (| r | r . explainable == Explainable :: Yes) . map (| r | r . op) . collect () ; let expected_explainable = [\"Seq::update\" , \"Seq::slice\" , \"Map::get_or\" , \"Map::keys\" , \"Map::values\" , \"Map::entries\" , \"Set::union\" , \"Set::intersection\" , \"Set::difference\" ,] ; for op in & expected_explainable { assert ! (explainable . contains (op) , \"op {op:?} must be Explainable::Yes in the matrix (C3)\") ; } assert_eq ! (explainable . len () , expected_explainable . len () , \"unexpected extra/missing Explainable::Yes ops: got {explainable:?}\") ; } # [doc = \" Map::remove is total (returns `(Map, Option<V>)`) — the absence is in the Option, not in fallibility.\"] # [test] fn map_remove_is_total_absence_in_option () { let row = MATRIX . iter () . find (| r | r . op == \"Map::remove\") . unwrap () ; assert_eq ! (row . fallibility , Fallibility :: Total , \"Map::remove is total — absence is in the Option<V> second component, not a Fallible op\") ; } }",
+      "reason": "#[cfg(test)] item — out of scope for this PoC's transpilation surface (excluded from the expressible-fraction denominator, but recorded, never silently skipped)",
+      "item_name": "tests"
+    }
+  ],
+  "total_top_level_items": 5
+}

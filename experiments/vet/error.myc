@@ -1,0 +1,39 @@
+// nodule: std.collections.error
+// Explicit error types for `std.collections` (C1 — never-silent; RFC-0016 §4.1).
+//
+// Every fallible operation in this crate returns a typed error or `Option`, never a
+// sentinel or silently-clamped value. [`CollErr`] is the only error variant — it covers
+// the out-of-bounds / bad slice-range cases (spec §3).
+// @summary: best-effort transpilation via mycelium-transpile (M-873). Declared,
+// unvalidated — no Mycelium parser/typechecker confirms this output; see the
+// accompanying .gap.json for every construct this pass could not express.
+nodule std.collections.error;
+
+// Out-of-bounds or invalid range on a [`crate::Seq`] operation (spec §3 `CollErr`).
+//
+// # C1 compliance
+// [`crate::seq::Seq::update`] and [`crate::seq::Seq::slice`] return `Err(CollErr::IndexOOB)`
+// rather than silently clamping or returning a sentinel value (RFC-0016 §4.1 C1; G2
+// "never-silent"). The `context` field carries a human-readable description of *which bound
+// was violated*, enabling the caller to surface the diagnostic without stripping information
+// (G11 dual projection; RFC-0013 structured diagnostic).
+//
+// # EXPLAIN (C3)
+// `IndexOOB` is the reified *refusal record* for `update` / `slice` (spec §4 "the refusal
+// record"). The fields are inspectable: a caller can see `index`, `len`, and `context`
+// without parsing strings.
+pub type CollErr = IndexOOB(Binary{64}, Binary{64}, Bytes);
+
+impl Show[CollErr] for CollErr {
+  fn render(x: CollErr) => Bytes =
+    match x { IndexOOB(p0, p1, p2) => bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat(bytes_concat("IndexOOB(", render(p0)), ", "), render(p1)), ", "), render(p2)), ")") };
+};
+
+fn eq_CollErr(a: CollErr, b: CollErr) => Binary{1} =
+  match a { IndexOOB(p0, p1, p2) => match b { IndexOOB(q0, q1, q2) => and(and(eq(p0, q0), eq(p1, q1)), bytes_eq(p2, q2)) } };
+
+impl CollErr {
+  // Construct an `IndexOOB` error.
+  // Declared: renamed `impl CollErr { fn index_oob }` -> `_7CollErr9index_oob` (D4 inherent-impl flat-fn desugar + DN-140 length-prefix mangle, M-664).
+  fn _7CollErr9index_oob(index: Binary{64}, len: Binary{64}, context: Bytes) => CollErr = IndexOOB(index, len, context);
+};

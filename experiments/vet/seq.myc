@@ -1,0 +1,35 @@
+// nodule: std.collections.seq
+// `Seq<E>` — immutable persistent indexed sequence (spec §3, RFC-0016 §4.4).
+//
+// # Guarantee tag: `Exact` throughout (spec §4 / RFC-0016 C2)
+// No `Seq` op carries accuracy, precision, or probability semantics. Every operation is a
+// deterministic structural fact — `Exact` is the honest floor (RFC-0016 C2 "an op with no
+// accuracy semantics … is simply `Exact`").
+//
+// # Value semantics (C4 / ADR-003)
+// `Seq<E>` is an **immutable value**. Every "mutating" op (`push`, `pop`, `update`,
+// `concat`, `slice`) returns a *new* `Seq<E>`; the receiver is never modified.
+// Structural sharing is an implementation detail: it is invisible to identity.
+//
+// # Never-silent (C1 / G2)
+// - `get` / `first` return `Option` — `None` when out of range / empty. Never a default.
+// - `pop` returns `Option<(Seq<E>, E)>` — `None` on empty. Never a silent no-op.
+// - `update` / `slice` return `Result<_, CollErr>` — `Err(IndexOOB)` on bad bounds. Never
+//   a clamp or a sentinel.
+//
+// # Iteration order (documented — the honesty crux)
+// `foldable` walks elements in **index order** (0, 1, …, len-1). This is a first-class
+// promise: the order is stable across `push`/`pop`/`update` and depends only on the
+// sequence's contents, never on internal implementation choices (no silent reorder).
+//
+// # EXPLAIN (C3)
+// `update` and `slice` produce `Err(IndexOOB)` refusal records whose fields (`index`,
+// `len`, `context`) are inspectable — the caller can read *why* the op was refused
+// without parsing strings (RFC-0013 structured diagnostic).
+// @summary: best-effort transpilation via mycelium-transpile (M-873). Declared,
+// unvalidated — no Mycelium parser/typechecker confirms this output; see the
+// accompanying .gap.json for every construct this pass could not express.
+nodule std.collections.seq;
+
+// EXPLAIN (L2-B/DN-124): Declared co-include of batch-sibling type surface (homes: std.collections.error) so single-file oracle is self-contained — not a language `use` identity, not a short-form path collapse (M-1084 full path retained as provenance). Transitive type deps in the same batch are co-included. G2/VR-5.
+type CollErr = IndexOOB(Binary{64}, Binary{64}, Bytes);
